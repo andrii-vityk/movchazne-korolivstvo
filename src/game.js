@@ -59,12 +59,12 @@ function textHtml(text, tap) {
 const para = text => `<p class="txt">${textHtml(text, true)}</p>`;
 // Картки й таблички самі натискаються, тому склади на них показує одна спільна кнопка.
 const splitBtn = () => store.opt.syl ? "" : `<button class="alt" id="split">🔍 Показати склади</button>`;
-const catLine = text => `<div class="cat"><span class="catpic" aria-hidden="true">🐈</span><div class="bubble">${para(text)}</div></div>`;
+const catLine = text => `<div class="cat"><span class="catpic">${ART_CAT}</span><div class="bubble">${para(text)}</div></div>`;
 
 function renderHero() {
   const r = rank(), next = RANKS[r];
   const items = RANKS.slice(1, r).map(x => x.item).join("");
-  $("hero").innerHTML = `<span class="gear">🧙${items}</span><span>Рівень ${r}</span>` +
+  $("hero").innerHTML = `<span class="gear">${items}</span><span>Рівень ${r}</span>` +
     (next ? `<span class="xp">${store.xp}/${next.xp}</span>` : "") + (store.wins ? `<span>🏆 ${store.wins}</span>` : "");
 }
 
@@ -74,16 +74,17 @@ function applyOpts() {
 }
 $("optSyl").onchange = e => { store.opt.syl = e.target.checked; save(); applyOpts(); };
 
-const DECO_SPOTS = [["38%", "14%"], ["52%", "38%"], ["30%", "48%"]];
+const DECO_SPOTS = ["34%", "46%", "58%"]; // декор стоїть на землі між героєм і ворогом
 const gearLine = () => RANKS.slice(1, rank()).map(r => r.item).join("");
 
 // Сцена: герой із котом ліворуч, ворог праворуч.
 function sceneHtml(room, foe) {
   return `<div class="scene bg-${room.bg}" id="scene">
-    ${room.deco.map((d, i) => `<span class="deco" style="left:${DECO_SPOTS[i % 3][0]};top:${DECO_SPOTS[i % 3][1]}" aria-hidden="true">${d}</span>`).join("")}
+    ${artBack(room.bg)}
+    ${room.deco.map((d, i) => `<span class="deco" style="left:${DECO_SPOTS[i % 3]}" aria-hidden="true">${d}</span>`).join("")}
     <span class="gearline" aria-hidden="true">${gearLine()}</span>
-    <div class="actor me" id="me">🧙</div>
-    <div class="actor buddy" aria-hidden="true">🐈</div>
+    <div class="actor me" id="me">${ART_HERO}</div>
+    <div class="actor buddy">${ART_CAT}</div>
     ${foe ? `<div class="actor foe" id="pic">${room.icon}</div>` : ""}
     ${room.t ? `<div class="foeinfo">${room.t}<span class="pips" id="pips"></span></div>` : ""}
   </div>`;
@@ -94,9 +95,8 @@ const livesText = () => "❤️".repeat(F.lives) + "🖤".repeat(F.maxLives - F.
 
 // Село: тут видно все, що повернули данжі.
 function villageScene() {
-  const sites = CHAPTERS.map((c, i) => `<span class="site" style="right:${6 + i * 24}%"><span class="sitefx">${c.site[i < store.won ? 2 : 1]}</span>${c.site[0]}</span>`).join("");
-  return `<div class="scene bg-village"><span class="village">🏘️</span>${sites}
-    <div class="actor me">🧙</div><div class="actor buddy" aria-hidden="true">🐈</div></div>`;
+  return `<div class="scene bg-village">${artVillage(store.won)}
+    <div class="actor me">${ART_HERO}</div><div class="actor buddy">${ART_CAT}</div></div>`;
 }
 
 function pickDungeon(i) {

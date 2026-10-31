@@ -167,7 +167,7 @@ const data = chapters.map(({ n, word, site, start, cat, end, next, R }) => ({
     T: T.map(({ q, note, c, p }) => ({ q, note, c, p })),
   })),
 }));
-const scripts = ["syllables", "game"]
+const scripts = ["syllables", "art", "game"]
   .map(f => fs.readFileSync(path.join(ROOT, "src", f + ".js"), "utf8"))
   .join("\n");
 const js = `const CHAPTERS=${JSON.stringify(data).replace(/</g, "\\u003c")};\n${scripts}`;

@@ -13,8 +13,8 @@ const FIELDS = {
   "вид": "kind", "значок": "icon", "сила": "hp", "фон": "bg", "декор": "deco", "місце": "at",
   "вступ": "intro", "мета": "goal", "кінець": "outro", "кіт": "cat", "руна": "rune",
 };
-const TOP_FIELDS = { "слово": "word", "початок": "start", "кіт": "cat", "фінал": "end", "далі": "next" };
-const BACKGROUNDS = ["cave", "dark", "door", "web", "gate", "lair"];
+const TOP_FIELDS = { "слово": "word", "місцина": "site", "початок": "start", "кіт": "cat", "фінал": "end", "далі": "next" };
+const BACKGROUNDS = ["cave", "dark", "door", "web", "gate", "lair", "river", "ice"];
 const MAX_JUMP = 3; // на скільки слів може вирости середня підказка між кімнатами
 const problems = [];
 
@@ -149,16 +149,18 @@ chapters.forEach(c => {
     ids.set(r.id, r.where);
   });
   checkDungeon(c);
-  checkSteps(fighting(c.R));
+  c.site = (c.site || "").split("|").map(s => s.trim());
+  if (c.site.length !== 3) problems.push(`Розділ «${c.n}»: місцина має три значки: місце, без слова, зі словом`);
 });
+checkSteps(chapters.flatMap(c => fighting(c.R))); // складність росте й між данжами
 
 if (problems.length) {
   console.error("Знайдено проблеми:\n- " + problems.join("\n- "));
   process.exit(1);
 }
 
-const data = chapters.map(({ n, word, start, cat, end, next, R }) => ({
-  n, word, start, cat, end, next,
+const data = chapters.map(({ n, word, site, start, cat, end, next, R }) => ({
+  n, word, site, start, cat, end, next,
   R: R.map(({ where, E, T, ...r }) => ({
     ...r,
     E: E.map(({ to, s }) => ({ to, s })),

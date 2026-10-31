@@ -1,9 +1,13 @@
 // Гра: село → мапа данжу → кімнати → брама з рунами → бос → село оживає.
-const DUNGEON = CHAPTERS[0];
-const ROOMS = DUNGEON.R;
+let DUNGEON, ROOMS, BOSS, RUNES, allNotes;
+function useDungeon(i) {
+  DUNGEON = CHAPTERS[i];
+  ROOMS = DUNGEON.R;
+  BOSS = ROOMS[ROOMS.length - 1];
+  RUNES = ROOMS.filter(r => r.rune).length;
+  allNotes = ROOMS.filter(r => r.note).length;
+}
 const roomById = id => ROOMS.find(r => r.id === id);
-const BOSS = ROOMS[ROOMS.length - 1];
-const RUNES = ROOMS.filter(r => r.rune).length;
 const BASE_LIVES = 3, BASE_SPARKS = 3, CHEST_XP = 5;
 // Рівні героя: досвід, новий предмет і що він дає.
 const RANKS = [
@@ -30,8 +34,11 @@ const newRun = () => ({ cleared: [ROOMS[0].id], runes: [], notes: [] });
 let store = {};
 try { store = JSON.parse(localStorage.getItem("slovo-mech") || "{}"); } catch (e) {}
 store = { xp: 0, wins: 0, ...store };
+if (store.won === undefined) store.won = store.wins > 0 ? 1 : 0; // скільки данжів пройдено
+store.dng = Math.min(store.dng === undefined ? store.won : store.dng, CHAPTERS.length - 1);
+useDungeon(store.dng);
 if (store.v !== 3) { store.opt = { syl: false }; store.v = 3; } // склади стали необов'язковими
-store.run = store.run || newRun();
+if (!store.run || store.run.cleared[0] !== ROOMS[0].id) store.run = newRun();
 const save = () => { try { localStorage.setItem("slovo-mech", JSON.stringify(store)); } catch (e) {} };
 
 const rank = () => RANKS.filter(r => store.xp >= r.xp).length;
@@ -39,7 +46,6 @@ const lives0 = () => BASE_LIVES + (rank() >= 2 ? 1 : 0);
 const sparks0 = () => BASE_SPARKS + (rank() >= 3 ? 2 : 0);
 const cleared = id => store.run.cleared.includes(id);
 const notes = () => ROOMS.filter(r => r.note && store.run.notes.includes(r.note.id)).map(r => r.note);
-const allNotes = ROOMS.filter(r => r.note).length;
 
 // Текст чистий, поділ на склади вже в розмітці й показується за дотиком до слова.
 const esc = c => c.replace(/&/g, "&amp;").replace(/</g, "&lt;");
@@ -86,16 +92,38 @@ function sceneHtml(room, foe) {
 const pipsText = () => "🟥".repeat(Math.max(F.hp, 0)) + "⬜".repeat(F.room.hp - Math.max(F.hp, 0));
 const livesText = () => "❤️".repeat(F.lives) + "🖤".repeat(F.maxLives - F.lives);
 
-// Село: тут видно, що повернув данж.
+// Село: тут видно все, що повернули данжі.
+function villageScene() {
+  const sites = CHAPTERS.map((c, i) => `<span class="site" style="right:${6 + i * 24}%"><span class="sitefx">${c.site[i < store.won ? 2 : 1]}</span>${c.site[0]}</span>`).join("");
+  return `<div class="scene bg-village"><span class="village">🏘️</span>${sites}
+    <div class="actor me">🧙</div><div class="actor buddy" aria-hidden="true">🐈</div></div>`;
+}
+
+function pickDungeon(i) {
+  store.dng = i;
+  useDungeon(i);
+  store.run = newRun();
+  store.fin = undefined;
+  save();
+  showMap();
+}
+
 function showVillage() {
-  const lit = store.wins > 0, begun = store.run.cleared.length > 1;
-  $("screen").innerHTML = `<div class="panel center">
-    <div class="scene bg-village"><span class="village">🏘️</span><span class="forge">⚒️</span><span class="fire">${lit ? "🔥" : "💨"}</span>
-      <div class="actor me">🧙</div><div class="actor buddy" aria-hidden="true">🐈</div></div>
-    ${para(lit ? `${DUNGEON.end} ${DUNGEON.next}` : DUNGEON.start)}
-    ${lit ? "" : catLine(DUNGEON.cat)}
-    <button class="big" id="go">${begun ? "Далі в печеру" : lit ? "Пройти печеру ще раз" : "У печеру"}</button></div>`;
-  $("go").onclick = showMap;
+  const done = store.fin === undefined ? null : CHAPTERS[store.fin];
+  const allDone = store.won >= CHAPTERS.length, begun = store.run.cleared.length > 1;
+  const again = allDone && !begun;
+  const buttons = again
+    ? CHAPTERS.map((c, i) => `<button class="big" data-d="${i}">Ще раз: ${c.n}</button>`).join("")
+    : done ? `<button class="big" id="go">Далі</button>`
+    : `<button class="big" id="go">${begun ? "Далі в печеру" : "У печеру"}</button>`;
+  $("screen").innerHTML = `<div class="panel center">${villageScene()}
+    ${para(done ? `${done.end} ${done.next}` : allDone ? CHAPTERS[CHAPTERS.length - 1].next : DUNGEON.start)}
+    ${done || allDone ? "" : catLine(DUNGEON.cat)}
+    ${buttons}</div>`;
+  document.querySelectorAll("[data-d]").forEach(b => { b.onclick = () => pickDungeon(+b.dataset.d); });
+  if ($("go")) $("go").onclick = () => {
+    if (done) { store.fin = undefined; save(); showVillage(); } else showMap();
+  };
   renderHero();
 }
 
@@ -205,7 +233,7 @@ function renderFight() {
   $("screen").innerHTML = `<div class="panel" id="fight">
     ${sceneHtml(F.room, true)}
     ${para(F.task.q)}
-    ${boss ? `<div class="pocketbox"><b>🎒 Записки коваля</b>${pocketHtml()}</div>` : ""}
+    ${boss ? `<div class="pocketbox"><b>🎒 Записки</b>${pocketHtml()}</div>` : ""}
     <div class="goal">${para(F.room.goal)}</div>
     <div class="cards">${F.cards.map((c, i) => {
       return `<div class="holder"><button class="spell" data-i="${i}"><span class="txt">${textHtml(c)}</span></button>${chip(c)}</div>`;
@@ -341,12 +369,17 @@ const newItem = before => {
 
 function bossWon() {
   const before = rank();
+  const body = `${para(BOSS.outro)}<p class="word">${DUNGEON.word}</p>`, icon = DUNGEON.site[2];
   store.xp += CHEST_XP;
   store.wins++;
+  store.fin = CHAPTERS.indexOf(DUNGEON);
+  store.won = Math.max(store.won, store.fin + 1);
+  store.dng = Math.min(store.won, CHAPTERS.length - 1);
+  useDungeon(store.dng);
   store.run = newRun();
   save();
   confetti();
-  result("🔥", `${para(BOSS.outro)}<p class="word">${DUNGEON.word}</p>${newItem(before)}`, "До села", showVillage);
+  result(icon, body + newItem(before), "До села", showVillage);
 }
 
 // Програш нічого не забирає: знахідки й досвід лишаються.

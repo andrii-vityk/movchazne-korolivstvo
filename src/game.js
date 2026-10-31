@@ -57,8 +57,8 @@ function textHtml(text, tap) {
   }).join(" ");
 }
 const para = text => `<p class="txt">${textHtml(text, true)}</p>`;
-// Кнопка біля тексту, який сам натискається (картка, табличка): спершу склади, потім озвучка.
-const chip = word => `<button class="say" data-say="${word}" aria-label="Показати склади">скла-ди</button>`;
+// Картки й таблички самі натискаються, тому склади на них показує одна спільна кнопка.
+const splitBtn = () => store.opt.syl ? "" : `<button class="alt" id="split">🔍 Показати склади</button>`;
 const catLine = text => `<div class="cat"><span class="catpic" aria-hidden="true">🐈</span><div class="bubble">${para(text)}</div></div>`;
 
 function renderHero() {
@@ -161,7 +161,7 @@ function runesHtml() {
 function showMap() {
   const list = exits().map(e => {
     const room = roomById(e.to), shut = room === BOSS && !unlocked();
-    return `<div class="holder"><button class="sign" data-to="${e.to}" ${shut ? "disabled" : ""}>${shut ? "🔒 " : "➜ "}<span class="txt">${textHtml(e.s)}</span></button>${chip(e.s)}</div>`;
+    return `<button class="sign" data-to="${e.to}" ${shut ? "disabled" : ""}>${shut ? "🔒 " : "➜ "}<span class="txt">${textHtml(e.s)}</span></button>`;
   }).join("");
   $("screen").innerHTML = `<div class="panel">
     <h2 class="dungeon">${DUNGEON.n}</h2>
@@ -169,7 +169,7 @@ function showMap() {
     <div class="toolbar">${runesHtml()}<button class="alt" id="pocket">🎒 Кишеня: ${notes().length} / ${allNotes}</button></div>
     ${exits().some(e => roomById(e.to) === BOSS) && !unlocked() ? `<p class="sub">Брама просить три руни.</p>` : ""}
     <div class="signs">${list}</div>
-    <div class="controls"><button class="alt" id="home">← До села</button></div></div>`;
+    <div class="controls">${splitBtn()}<button class="alt" id="home">← До села</button></div></div>`;
   document.querySelectorAll(".sign").forEach(b => { b.onclick = () => enterRoom(b.dataset.to); });
   $("pocket").onclick = openPocket;
   $("home").onclick = showVillage;
@@ -236,7 +236,7 @@ function renderFight() {
     ${boss ? `<div class="pocketbox"><b>🎒 Записки</b>${pocketHtml()}</div>` : ""}
     <div class="goal">${para(F.room.goal)}</div>
     <div class="cards">${F.cards.map((c, i) => {
-      return `<div class="holder"><button class="spell" data-i="${i}"><span class="txt">${textHtml(c)}</span></button>${chip(c)}</div>`;
+      return `<div class="holder"><button class="spell" data-i="${i}"><span class="txt">${textHtml(c)}</span></button><button class="say" data-say="${c}" aria-label="Озвучити за іскру" ${store.opt.syl && voice ? "" : "hidden"}>🔊</button></div>`;
     }).join("")}</div>
     <p id="msg" class="sub">Важке слово? Натисни на нього.</p>
     <div class="stats">
@@ -244,6 +244,7 @@ function renderFight() {
       ${voice ? `<span class="stat">Іскрик шепоче 🔊 <b id="sparks">${"✨".repeat(F.sparks) || "—"}</b></span>` : ""}
     </div>
     <div class="controls">
+      ${splitBtn()}
       ${boss ? "" : `<button class="alt" id="pocket">🎒 Кишеня</button>`}
       <button class="alt" id="leave">← До мапи</button>
     </div></div>`;
@@ -263,7 +264,7 @@ function hint(word) {
   F.hinted = true;
   speak(word);
   $("sparks").textContent = "✨".repeat(F.sparks) || "—";
-  document.querySelectorAll(".say.voiced").forEach(b => { b.disabled = !F.sparks; });
+  document.querySelectorAll(".say").forEach(b => { b.disabled = !F.sparks; });
 }
 
 // Перша допомога — склади, безплатно. Друга — озвучка.
@@ -271,18 +272,15 @@ function tapWord(w) {
   if (store.opt.syl || w.classList.contains("split")) hint(w.dataset.say);
   else w.classList.add("split");
 }
-function tapChip(b) {
-  const words = b.parentElement.querySelectorAll(".w");
-  if (b.classList.contains("voiced")) { hint(b.dataset.say); return; }
-  words.forEach(w => w.classList.add("split"));
-  b.classList.add("voiced");
-  b.textContent = "🔊";
-  b.setAttribute("aria-label", "Озвучити");
-  b.disabled = !ukVoice || (F && !F.sparks);
+function splitAll(btn) {
+  document.querySelectorAll(".spell .w, .sign .w").forEach(w => w.classList.add("split"));
+  document.querySelectorAll(".say").forEach(b => { b.hidden = !ukVoice; b.disabled = !!F && !F.sparks; });
+  btn.remove();
 }
 document.addEventListener("click", e => {
-  const chipEl = e.target.closest(".say"), word = e.target.closest(".w.tap");
-  if (chipEl) tapChip(chipEl);
+  const say = e.target.closest(".say"), word = e.target.closest(".w.tap");
+  if (e.target.closest("#split")) splitAll($("split"));
+  else if (say) hint(say.dataset.say);
   else if (word) tapWord(word);
 });
 document.addEventListener("keydown", e => {

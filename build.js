@@ -176,5 +176,9 @@ if (!tpl.includes("/*SCRIPTS*/")) { console.error("У шаблоні немає 
 
 fs.mkdirSync(path.join(ROOT, "dist"), { recursive: true });
 fs.writeFileSync(path.join(ROOT, "dist", "index.html"), tpl.replace("/*SCRIPTS*/", () => js));
+// іконки сайту: src/icons/* → dist/
+for (const f of fs.readdirSync(path.join(ROOT, "src", "icons"))) {
+  fs.copyFileSync(path.join(ROOT, "src", "icons", f), path.join(ROOT, "dist", f));
+}
 const steps = chapters.flatMap(c => fighting(c.R).map(r => avgWords(r).toFixed(1))).join(" → ");
 console.log(`Готово: ${data.length} данж(ів), кімнат: ${ids.size}. Слів у підказці: ${steps}`);

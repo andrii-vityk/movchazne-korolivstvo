@@ -26,9 +26,7 @@ const ART_HOUSE = art("hut", "0 0 100 90", `
   <rect x="22" y="52" width="14" height="14" fill="#8fc6e0"/><rect x="64" y="52" width="14" height="14" fill="#8fc6e0"/>`);
 
 const artForge = lit => art("forge", "0 0 110 130", `
-  ${lit
-    ? `<g class="flame"><path d="M84 34C70 22 78 12 84 0c6 12 14 22 0 34z" fill="#f2761e"/><path d="M84 34c-7-7-3-12 0-19 3 7 7 12 0 19z" fill="#ffd95e"/></g>`
-    : `<circle cx="84" cy="24" r="6" fill="#c9c6cc"/><circle cx="92" cy="12" r="8" fill="#dcdade"/>`}
+  ${lit ? `<g class="flame"><path d="M84 34C70 22 78 12 84 0c6 12 14 22 0 34z" fill="#f2761e"/><path d="M84 34c-7-7-3-12 0-19 3 7 7 12 0 19z" fill="#ffd95e"/></g>` : ""}
   <rect x="76" y="36" width="16" height="32" fill="#6b6470"/>
   <rect x="8" y="72" width="94" height="58" fill="#8a8490"/>
   <path d="M0 74l55-30 55 30z" fill="#4f4a58"/>

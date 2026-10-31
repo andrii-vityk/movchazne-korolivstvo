@@ -45,11 +45,11 @@ const ART_MOVCHUN = art("movchun", "0 0 150 170", `
   <path d="M88 84q10 2 16 8" stroke="#40305f" stroke-width="9" stroke-linecap="round" fill="none"/>`);
 
 const artWell = full => art("well", "0 0 80 104", `
-  ${full ? `<path class="flame" d="M40 0c6 9 9 13 9 18a9 9 0 0 1-18 0c0-5 3-9 9-18z" fill="#5db7e8"/>` : ""}
   <path d="M6 42L40 26l34 16z" fill="#7a4a30"/>
   <rect x="14" y="42" width="5" height="26" fill="#6b4a2f"/><rect x="61" y="42" width="5" height="26" fill="#6b4a2f"/>
-  <rect x="38.5" y="42" width="3" height="14" fill="#4b3a2c"/><rect x="33" y="56" width="14" height="10" fill="#a9abb3"/>
+  <rect x="38.5" y="42" width="3" height="6" fill="#4b3a2c"/><rect x="33" y="48" width="14" height="9" fill="#a9abb3"/>
   <ellipse cx="40" cy="70" rx="29" ry="6" fill="${full ? "#5db7e8" : "#6b5a45"}"/>
+  ${full ? `<path class="flame" d="M40 58c2 3 3 4.5 3 6a3 3 0 0 1-6 0c0-1.5 1-3 3-6z" fill="#5db7e8"/><ellipse cx="40" cy="71" rx="9" ry="2" fill="none" stroke="#d6f0fb" stroke-width="1.5"/>` : ""}
   <path d="M11 70v30c0 2 13 4 29 4s29-2 29-4V70c0 3-13 6-29 6s-29-3-29-6z" fill="#8a8490"/>`);
 
 // Що повернули данжі: порядок збігається з levels/*.md.

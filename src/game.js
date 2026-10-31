@@ -93,6 +93,8 @@ function sceneHtml(room, foe) {
 const pipsText = () => "🟥".repeat(Math.max(F.hp, 0)) + "⬜".repeat(F.room.hp - Math.max(F.hp, 0));
 const livesText = () => "❤️".repeat(F.lives) + "🖤".repeat(F.maxLives - F.lives);
 
+const MOVCHUN = "Мовчун високий і темний. Він носить довгий плащ і великий мішок. У мішку сидять украдені слова. У Мовчуна немає рота, тому він не вміє говорити. Він заздрить усім, хто читає.";
+
 // Село: тут видно все, що повернули данжі.
 function villageScene() {
   return `<div class="scene bg-village">${artVillage(store.won)}
@@ -119,8 +121,9 @@ function showVillage() {
   $("screen").innerHTML = `<div class="panel center">${villageScene()}
     ${para(done ? `${done.end} ${done.next}` : allDone ? CHAPTERS[CHAPTERS.length - 1].next : DUNGEON.start)}
     ${done || allDone ? "" : catLine(DUNGEON.cat)}
-    ${buttons}</div>`;
+    ${buttons}<button class="alt" id="who">Хто такий Мовчун?</button></div>`;
   document.querySelectorAll("[data-d]").forEach(b => { b.onclick = () => pickDungeon(+b.dataset.d); });
+  $("who").onclick = () => result(ART_MOVCHUN, para(MOVCHUN), "До села", showVillage);
   if ($("go")) $("go").onclick = () => {
     if (done) { store.fin = undefined; save(); showVillage(); } else showMap();
   };

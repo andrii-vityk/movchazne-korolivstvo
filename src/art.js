@@ -26,11 +26,23 @@ const ART_HOUSE = art("hut", "0 0 100 90", `
   <rect x="22" y="52" width="14" height="14" fill="#8fc6e0"/><rect x="64" y="52" width="14" height="14" fill="#8fc6e0"/>`);
 
 const artForge = lit => art("forge", "0 0 110 130", `
-  ${lit ? `<g class="flame"><path d="M84 34C70 22 78 12 84 0c6 12 14 22 0 34z" fill="#f2761e"/><path d="M84 34c-7-7-3-12 0-19 3 7 7 12 0 19z" fill="#ffd95e"/></g>` : ""}
+  ${lit ? `<g class="flame" fill="#c9c6cc"><circle cx="84" cy="26" r="6"/><circle cx="92" cy="14" r="5"/><circle cx="87" cy="4" r="4"/></g>` : ""}
   <rect x="76" y="36" width="16" height="32" fill="#6b6470"/>
   <rect x="8" y="72" width="94" height="58" fill="#8a8490"/>
   <path d="M0 74l55-30 55 30z" fill="#4f4a58"/>
-  <path d="M38 130v-28a17 17 0 0 1 34 0v28z" fill="${lit ? "#ffb347" : "#2b2433"}"/>`);
+  <path d="M38 130v-28a17 17 0 0 1 34 0v28z" fill="${lit ? "#ffb347" : "#2b2433"}"/>
+  ${lit ? `<path class="flame" d="M55 130c-10-6-8-13 0-24 8 11 10 18 0 24z" fill="#f2761e"/>` : ""}`);
+
+// Мовчун: темний плащ, очі без рота й мішок украдених слів.
+const ART_MOVCHUN = art("movchun", "0 0 150 170", `
+  <path d="M104 92c-14 4-20 20-18 42 2 18 12 32 30 32s32-14 30-34c-2-22-14-36-28-40z" fill="#8a6a45"/>
+  <path d="M100 96q14 6 24-3l-3-8q-11 6-19 3z" fill="#5f4930"/>
+  <g fill="#f4e7c8" font-family="serif" font-weight="700" font-size="17" text-anchor="middle"><text x="114" y="128">А</text><text x="133" y="124">Б</text><text x="124" y="152">В</text></g>
+  <path d="M14 170C18 96 22 26 58 12c36 14 38 84 44 158z" fill="#2b2140"/>
+  <path d="M58 12C42 20 34 38 36 58c6 16 38 16 44 0 2-20-6-38-22-46z" fill="#40305f"/>
+  <path d="M42 56c0-22 32-22 32 0 0 14-32 14-32 0z" fill="#17112b"/>
+  <ellipse cx="50" cy="52" rx="3.5" ry="5" fill="#ffd95e"/><ellipse cx="66" cy="52" rx="3.5" ry="5" fill="#ffd95e"/>
+  <path d="M88 84q10 2 16 8" stroke="#40305f" stroke-width="9" stroke-linecap="round" fill="none"/>`);
 
 const artWell = full => art("well", "0 0 80 104", `
   ${full ? `<path class="flame" d="M40 0c6 9 9 13 9 18a9 9 0 0 1-18 0c0-5 3-9 9-18z" fill="#5db7e8"/>` : ""}

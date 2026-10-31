@@ -58,8 +58,15 @@ button.spell:disabled{cursor:wait}
 .bg-door{--sky:linear-gradient(#6d5a7a,#463a55);--floor:#2c2436}
 .bg-web{--sky:linear-gradient(#3f5a52,#27403a);--floor:#1b2c28}
 .bg-gate{--sky:linear-gradient(#5e6b7d,#39424f);--floor:#252c35}
+.bg-field{--sky:linear-gradient(#cdbf94,#e6d6a8);--floor:#7a6238}
+.bg-tower{--sky:linear-gradient(#7c7f8c,#565a68);--floor:#3a3d48}
+.bg-forest{--sky:linear-gradient(#6d9a7c,#35574a);--floor:#24372c}
 .bg-village{--sky:linear-gradient(#a9d6ee,#e7dfc4);--floor:#7f9a55}
 .scene .sun{position:absolute;top:16px;right:9%;width:44px}
+.scene .mill,.scene .belfry{position:absolute;bottom:44px}
+.scene .mill{left:14%;width:15%;max-width:84px}
+.scene .belfry{left:1%;width:12%;max-width:62px}
+.spin{transform-box:fill-box;transform-origin:center}
 .scene .hut,.scene .forge,.scene .well{position:absolute;z-index:1;bottom:44px}
 .scene .hut{left:30%;width:27%;max-width:120px}
 .scene .forge{left:55%;width:27%;max-width:120px}
@@ -82,7 +89,7 @@ button.spell:disabled{cursor:wait}
 .node.gate{background:#4a1f24;border-color:var(--hurt);width:58px;height:58px}
 .node.fog{background:none;border:0;opacity:.3}
 .toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.runes{display:inline-flex;gap:6px}
+.runes{display:inline-flex;gap:6px;align-items:center}
 .rune{min-width:54px;padding:6px 8px;text-align:center;font:700 18px var(--read);border:2px dashed var(--line);border-radius:10px;color:var(--muted)}
 .rune.got{border:2px solid var(--star);color:var(--ink);background:color-mix(in srgb,var(--star) 22%,var(--card))}
 .signs{display:flex;flex-direction:column;gap:10px}
@@ -152,7 +159,9 @@ button:focus-visible,.tap:focus-visible{outline:3px solid var(--star);outline-of
   .shot.hit{animation:fly .45s ease-in forwards}
   .shot.miss{animation:flymiss .9s ease-in forwards}
   .boom{animation:pop .35s ease-out}
-  .flame{animation:flicker 1.4s ease-in-out infinite}}
+  .flame{animation:flicker 1.4s ease-in-out infinite}
+  .spin{animation:spin 9s linear infinite}}
+@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes flicker{50%{transform:scale(1.08,.92)}}
 @keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 @keyframes bob{50%{transform:translateY(-6px)}}

@@ -1,4 +1,4 @@
-// Гра: село → мапа данжу → кімнати → брама з рунами → бос → село оживає.
+// Гра: село → мапа данжу → кімнати → брама просить слово → бос → село оживає.
 let DUNGEON, ROOMS, BOSS, RUNES, allNotes;
 function useDungeon(i) {
   DUNGEON = CHAPTERS[i];
@@ -13,8 +13,10 @@ const BASE_LIVES = 3, BASE_SPARKS = 3, CHEST_XP = 5;
 const RANKS = [
   { xp: 0, item: "", name: "" },
   { xp: 8, item: "🛡️", name: "Щит: ще одне життя в кожному бою." },
-  { xp: 18, item: "🏮", name: "Ліхтар: ще дві іскри в кожному бою." },
+  { xp: 18, item: "🏮", name: "Ліхтар: на мапі видно, хто чекає попереду." },
   { xp: 30, item: "🗡️", name: "Меч: перший удар у бою б'є двічі." },
+  { xp: 52, item: "🔔", name: "Дзвіночок: три влучання поспіль б'ють двічі." },
+  { xp: 78, item: "🧥", name: "Золотий плащ: тепер герой сяє." },
 ];
 const $ = id => document.getElementById(id);
 
@@ -36,6 +38,8 @@ try { store = JSON.parse(localStorage.getItem("slovo-mech") || "{}"); } catch (e
 store = { xp: 0, wins: 0, ...store };
 if (store.won === undefined) store.won = store.wins > 0 ? 1 : 0; // скільки данжів пройдено
 store.dng = Math.min(store.dng === undefined ? store.won : store.dng, CHAPTERS.length - 1);
+// Нові данжі: хто не посеред походу, іде в перший непройдений.
+if (!store.run || store.run.cleared.length <= 1) store.dng = Math.min(store.won, CHAPTERS.length - 1);
 useDungeon(store.dng);
 if (store.v !== 3) { store.opt = { syl: false }; store.v = 3; } // склади стали необов'язковими
 if (!store.run || store.run.cleared[0] !== ROOMS[0].id) store.run = newRun();
@@ -43,7 +47,8 @@ const save = () => { try { localStorage.setItem("slovo-mech", JSON.stringify(sto
 
 const rank = () => RANKS.filter(r => store.xp >= r.xp).length;
 const lives0 = () => BASE_LIVES + (rank() >= 2 ? 1 : 0);
-const sparks0 = () => BASE_SPARKS + (rank() >= 3 ? 2 : 0);
+const sparks0 = () => BASE_SPARKS;
+const heroArt = () => rank() >= 6 ? ART_HERO.replace(/#4b5fc0/g, "#e2a93b").replace(/#39489a/g, "#c28a1e").replace(/#2b3475/g, "#a8741a") : ART_HERO;
 const cleared = id => store.run.cleared.includes(id);
 const notes = () => ROOMS.filter(r => r.note && store.run.notes.includes(r.note.id)).map(r => r.note);
 
@@ -83,7 +88,7 @@ function sceneHtml(room, foe) {
     ${artBack(room.bg)}
     ${room.deco.map((d, i) => `<span class="deco" style="left:${DECO_SPOTS[i % 3]}" aria-hidden="true">${d}</span>`).join("")}
     <span class="gearline" aria-hidden="true">${gearLine()}</span>
-    <div class="actor me" id="me">${ART_HERO}</div>
+    <div class="actor me" id="me">${heroArt()}</div>
     <div class="actor buddy">${ART_CAT}</div>
     ${foe ? `<div class="actor foe" id="pic">${room.icon}</div>` : ""}
     ${room.t ? `<div class="foeinfo">${room.t}<span class="pips" id="pips"></span></div>` : ""}
@@ -98,7 +103,7 @@ const MOVCHUN = "Мовчун високий і темний. Він носит�
 // Село: тут видно все, що повернули данжі.
 function villageScene() {
   return `<div class="scene bg-village">${artVillage(store.won)}
-    <div class="actor me">${ART_HERO}</div><div class="actor buddy">${ART_CAT}</div></div>`;
+    <div class="actor me">${heroArt()}</div><div class="actor buddy">${ART_CAT}</div></div>`;
 }
 
 function pickDungeon(i) {
@@ -117,7 +122,7 @@ function showVillage() {
   const buttons = again
     ? CHAPTERS.map((c, i) => `<button class="big" data-d="${i}">Ще раз: ${c.n}</button>`).join("")
     : done ? `<button class="big" id="go">Далі</button>`
-    : `<button class="big" id="go">${begun ? "Далі в печеру" : "У печеру"}</button>`;
+    : `<button class="big" id="go">${begun ? "Далі в похід" : "Вирушати"}</button>`;
   $("screen").innerHTML = `<div class="panel center">${villageScene()}
     ${para(done ? `${done.end} ${done.next}` : allDone ? CHAPTERS[CHAPTERS.length - 1].next : DUNGEON.start)}
     ${done || allDone ? "" : catLine(DUNGEON.cat)}
@@ -150,15 +155,16 @@ function mapHtml() {
   })).join("");
   const nodes = ROOMS.map(r => {
     const state = cleared(r.id) ? "done" : open.has(r.id) ? "open" : r === BOSS ? "gate" : "fog";
-    const pic = state === "fog" ? "☁️" : state === "open" ? (r === BOSS ? "🚪" : "❓") : state === "gate" ? "🔒" : r.icon;
+    const pic = state === "fog" ? "☁️" : state === "open" ? (r === BOSS ? "🚪" : rank() >= 3 ? r.icon : "❓") : state === "gate" ? "🔒" : r.icon;
     return `<div class="node ${state}" style="left:${mapX(r.at[0])}%;top:${mapY(r.at[1])}%" data-id="${r.id}">${pic}</div>`;
   }).join("");
   return `<div class="map" role="img" aria-label="Мапа данжу"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div>`;
 }
 
+// Шматочки слова: у збереженнях і коді вони досі звуться rune, щоб не зламати прогрес.
 function runesHtml() {
   const got = ROOMS.filter(r => r.rune).map(r => store.run.runes.includes(r.rune) ? r.rune : "");
-  return `<div class="runes" aria-label="Руни">${got.map(g => `<span class="rune ${g ? "got" : ""}">${g || "?"}</span>`).join("")}</div>`;
+  return `<div class="runes" aria-label="Шматочки слова"><span class="sub">Слово:</span>${got.map(g => `<span class="rune ${g ? "got" : ""}">${g || "?"}</span>`).join("")}</div>`;
 }
 
 function showMap() {
@@ -170,7 +176,7 @@ function showMap() {
     <h2 class="dungeon">${DUNGEON.n}</h2>
     ${mapHtml()}
     <div class="toolbar">${runesHtml()}<button class="alt" id="pocket">🎒 Кишеня: ${notes().length} / ${allNotes}</button></div>
-    ${exits().some(e => roomById(e.to) === BOSS) && !unlocked() ? `<p class="sub">Брама просить три руни.</p>` : ""}
+    ${exits().some(e => roomById(e.to) === BOSS) && !unlocked() ? `<p class="sub">Брама просить усе слово.</p>` : ""}
     <div class="signs">${list}</div>
     <div class="controls">${splitBtn()}<button class="alt" id="home">← До села</button></div></div>`;
   document.querySelectorAll(".sign").forEach(b => { b.onclick = () => enterRoom(b.dataset.to); });
@@ -208,11 +214,11 @@ function enterRoom(id) {
 }
 
 // Бій
-let F = null; // стан бою: room, hp, lives, maxLives, sparks, bag, task, cards, right, busy, hinted, boosted
+let F = null; // стан бою: room, hp, lives, maxLives, sparks, bag, task, cards, right, busy, hinted, boosted, streak
 const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
 function startFight(room) {
-  F = { room, lives: lives0(), maxLives: lives0(), sparks: sparks0(), bag: [], boosted: rank() >= 4 };
+  F = { room, lives: lives0(), maxLives: lives0(), sparks: sparks0(), bag: [], boosted: rank() >= 4, streak: 0 };
   F.hp = room.hp;
   nextTask();
 }
@@ -309,7 +315,10 @@ function cast(i) {
   document.querySelectorAll("button.spell").forEach(b => { b.disabled = true; });
   fx("shot " + (good ? "hit" : "miss"), pic);
   if (good) {
-    F.hp -= F.boosted ? Math.min(2, F.hp) : 1;
+    F.streak++;
+    const double = F.boosted || (rank() >= 5 && F.streak >= 3);
+    F.hp -= double ? Math.min(2, F.hp) : 1;
+    if (double) F.streak = 0;
     F.boosted = false;
     if (!F.hinted) store.xp++;
     save();
@@ -318,6 +327,7 @@ function cast(i) {
     later(1200, () => { F.hp <= 0 ? foeGone() : nextTask(); });
   } else {
     F.lives--;
+    F.streak = 0;
     $("msg").textContent = "Не те слово! Ворог б'є!";
     later(700, () => { $("pic").classList.add("lunge"); });
     later(950, () => { fx("boom onme", "💢"); $("me").classList.add("shake"); $("lives").textContent = livesText(); });
@@ -356,7 +366,7 @@ function roomDone(room) {
   if (room.note && !run.notes.includes(room.note.id)) run.notes.push(room.note.id);
   save();
   const finds = [
-    room.rune ? `<div class="find">Руна ${runesHtml()}</div>` : "",
+    room.rune ? `<div class="find">Шматочок слова ${runesHtml()}</div>` : "",
     room.note ? `<div class="find">📜 Записка в кишені${para(room.note.text)}</div>` : "",
   ].join("");
   if (finds) confetti();
@@ -386,7 +396,7 @@ function bossWon() {
 // Програш нічого не забирає: знахідки й досвід лишаються.
 function roomLost() {
   F = null;
-  result("🛡️", para("Життя закінчилися. Руни й записки лишаються."), "До мапи", showMap);
+  result("🛡️", para("Життя закінчилися. Шматочки слова й записки лишаються."), "До мапи", showMap);
 }
 
 $("reset").onclick = () => {

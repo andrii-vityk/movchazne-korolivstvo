@@ -11,10 +11,10 @@ const VOWELS = /[аеєиіїоуюя]/gi;
 const KINDS = { "вхід": "entry", "ворог": "enemy", "подія": "event", "бос": "boss" };
 const FIELDS = {
   "вид": "kind", "значок": "icon", "сила": "hp", "фон": "bg", "декор": "deco", "місце": "at",
-  "вступ": "intro", "мета": "goal", "кінець": "outro", "кіт": "cat", "руна": "rune",
+  "вступ": "intro", "мета": "goal", "кінець": "outro", "кіт": "cat", "шматок": "rune",
 };
 const TOP_FIELDS = { "слово": "word", "місцина": "site", "початок": "start", "кіт": "cat", "фінал": "end", "далі": "next" };
-const BACKGROUNDS = ["cave", "dark", "door", "web", "gate", "lair", "river", "ice"];
+const BACKGROUNDS = ["cave", "dark", "door", "web", "gate", "lair", "river", "ice", "field", "tower", "forest"];
 const MAX_JUMP = 3; // на скільки слів може вирости середня підказка між кімнатами
 const problems = [];
 
@@ -46,13 +46,13 @@ function parseChapter(file) {
     } else if (field && FIELDS[field[1]]) {
       room[FIELDS[field[1]]] = field[2];
     } else if (line.includes("|")) {
-      // [n1] на початку: відповідь лежить у цій записці.
+      // [n1] на початку: відповідь лежить у цій записці. [n1 n2]: відповідь випливає лише з обох.
       // картка: «слово 🧀». Картинку гравець бачить лише після вибору.
       const [q0, ...cards] = line.split("|").map(s => s.trim());
       const tag = q0.match(/^\[([^\]]+)\]\s*(.*)$/);
       const parts = cards.map(c => c.match(/^(.*\p{L})\s+(\P{L}+)$/u));
       if (parts.some(p => !p)) problems.push(`${where}: кожній картці потрібна картинка`);
-      room.T.push({ q: tag ? tag[2] : q0, note: tag ? tag[1] : undefined, c: parts.map(p => p && p[1]), p: parts.map(p => p && p[2]), where });
+      room.T.push({ q: tag ? tag[2] : q0, notes: tag ? tag[1].split(/\s+/) : [], c: parts.map(p => p && p[1]), p: parts.map(p => p && p[2]), where });
     } else {
       problems.push(`${where}: незрозумілий рядок «${line}»`);
     }
@@ -97,7 +97,7 @@ function checkRoom(r) {
   });
 }
 
-// Усі кімнати досяжні, а бос можливий: руни складаються в слово, записки існують,
+// Усі кімнати досяжні, а бос можливий: шматочки складаються в слово, записки існують,
 // і неправильна картка боса не збігається з правильною відповіддю із записок.
 function checkDungeon(c) {
   const byId = new Map(c.R.map(r => [r.id, r]));
@@ -114,12 +114,13 @@ function checkDungeon(c) {
   if (c.R[0].kind !== "entry") problems.push(`Розділ «${c.n}» має починатися входом`);
   const boss = c.R[c.R.length - 1];
   if (boss.kind !== "boss") { problems.push(`Розділ «${c.n}» має закінчуватися босом`); return; }
-  const runes = c.R.filter(r => r.rune).map(r => r.rune).join("").toLowerCase();
-  if (runes !== c.word) problems.push(`Руни складаються в «${runes}», а слово «${c.word}»`);
+  const pieces = c.R.filter(r => r.rune).map(r => r.rune).join("").toLowerCase();
+  if (pieces !== c.word) problems.push(`Шматочки складаються в «${pieces}», а слово «${c.word}»`);
   const notes = new Set(c.R.filter(r => r.note).map(r => r.note.id));
   const rights = new Set(boss.T.map(t => t.c[0]));
   boss.T.forEach(t => {
-    if (!notes.has(t.note)) problems.push(`${t.where}: немає записки «${t.note}»`);
+    if (!t.notes.length) problems.push(`${t.where}: завданню боса бракує записки`);
+    t.notes.forEach(n => { if (!notes.has(n)) problems.push(`${t.where}: немає записки «${n}»`); });
     t.c.slice(1).forEach(w => { if (rights.has(w)) problems.push(`${t.where}: «${w}» — правильна відповідь іншого завдання`); });
   });
 }
@@ -164,7 +165,7 @@ const data = chapters.map(({ n, word, site, start, cat, end, next, R }) => ({
   R: R.map(({ where, E, T, ...r }) => ({
     ...r,
     E: E.map(({ to, s }) => ({ to, s })),
-    T: T.map(({ q, note, c, p }) => ({ q, note, c, p })),
+    T: T.map(({ q, c, p }) => ({ q, c, p })),
   })),
 }));
 const scripts = ["syllables", "art", "game"]

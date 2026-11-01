@@ -21,12 +21,12 @@ const ART_CAT = art("catart", "0 0 44 42", `
 
 const board = (x, y, w, h, text) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#7a5230" stroke="#4b3a2c"/><text x="${x + w / 2}" y="${y + h - 3}" fill="#f4e7c8" font-family="sans-serif" font-weight="700" font-size="${h - 3}" text-anchor="middle">${text}</text>`;
 
-const artHouse = school => art("hut", "0 0 100 90", `
+const artHouse = (sign, school) => art("hut", "0 0 100 90", `
   <rect x="15" y="40" width="70" height="50" fill="#f0e2c4"/>
   <path d="M5 44L50 6l45 38z" fill="#b5533c"/>
   <rect x="42" y="58" width="16" height="32" fill="#6b4a2f"/>
   <rect x="22" y="52" width="14" height="14" fill="#8fc6e0"/><rect x="64" y="52" width="14" height="14" fill="#8fc6e0"/>
-  ${school ? board(26, 42, 48, 13, "ШКОЛА") : ""}`);
+  ${sign ? board(20, 40, 60, 15, school ? "ШКОЛА" : "ХАТА") : ""}`);
 
 // Кузня кам'яна: шви між каменями, дахівка, цегла на димарі й кам'яна арка.
 const artForge = (lit, sign) => art("forge", "0 0 110 130", `
@@ -44,7 +44,7 @@ const artForge = (lit, sign) => art("forge", "0 0 110 130", `
   <path d="M38 130v-28a17 17 0 0 1 34 0v28z" fill="${lit ? "#ffb347" : "#2b2433"}"/>
   <path d="M38 130v-28a17 17 0 0 1 34 0v28" fill="none" stroke="#6b6470" stroke-width="4"/>
   ${lit ? `<path class="flame" d="M55 130c-10-6-8-13 0-24 8 11 10 18 0 24z" fill="#f2761e"/>` : ""}
-  ${sign ? board(29, 72, 52, 13, "КУЗНЯ") : ""}`);
+  ${sign ? board(20, 70, 70, 17, "КУЗНЯ") : ""}`);
 
 // Мовчун: темний плащ, очі без рота й мішок украдених слів.
 const ART_MOVCHUN = art("movchun", "0 0 150 170", `
@@ -67,14 +67,15 @@ const artWell = full => art("well", "0 0 80 104", `
 
 const sail = (turn, fill) => `<g transform="rotate(${turn} 40 44)"><path d="M41 12h8v28h-8z" fill="${fill}" stroke="#8a6a45"/><path d="M39 44V8h2v36z" fill="#6b4a2f"/></g>`;
 // Крила стоять перед вежею. Зламаний млин: одне ціле крило, одне обірване й латки на стінах.
-const artMill = fixed => art("mill", "0 0 80 124", `
+const artMill = (fixed, sign) => art("mill", "0 0 80 124", `
   <path d="M22 124l7-72h22l7 72z" fill="${fixed ? "#d9cdb4" : "#a39a8a"}"/>
   <path d="M25 54l15-20 15 20z" fill="#7a4a30"/>
   <path d="M33 124v-16a7 7 0 0 1 14 0v16z" fill="#6b4a2f"/>
   ${fixed ? `<g class="spin">${[0, 90, 180, 270].map(t => sail(t, "#f4ead2")).join("")}</g>`
     : `<path d="M34 72l5 3-3 6-4-3z" fill="#7d7566"/><path d="M45 92l5 2-2 7-4-2z" fill="#7d7566"/>
        ${sail(35, "#8f8778")}<g transform="rotate(205 40 44)"><path d="M39 44V24l2 3v17z" fill="#6b4a2f"/><path d="M41 28l7 4-3 4 3 4h-7z" fill="#8f8778"/></g>`}
-  <circle cx="40" cy="44" r="4" fill="#4b3a2c"/>`);
+  <circle cx="40" cy="44" r="4" fill="#4b3a2c"/>
+  ${sign ? board(14, 76, 52, 16, "МЛИН") : ""}`);
 
 const artBelfry = rung => art("belfry", "0 0 60 150", `
   <rect x="12" y="44" width="36" height="106" fill="#b9b2a6"/>
@@ -83,17 +84,30 @@ const artBelfry = rung => art("belfry", "0 0 60 150", `
   ${rung ? `<path class="flame" d="M30 62c-6 0-7 6-8 15-1 2-2 3-2 4h20c0-1-1-2-2-4-1-9-2-15-8-15z" fill="#e2a93b"/>` : ""}
   <path d="M22 150v-18a8 8 0 0 1 16 0v18z" fill="#6b4a2f"/>`);
 
-const ART_CRADLE = art("cradle", "0 0 50 34", `
-  <path d="M6 10q19 26 38 0v-4H6z" fill="#a9744a"/><path d="M6 6h38" stroke="#7a5230" stroke-width="3"/>
-  <path d="M10 8q15 12 30 0z" fill="#f4e7c8"/><path d="M4 30q21 8 42 0" fill="none" stroke="#7a5230" stroke-width="4" stroke-linecap="round"/>`);
+// Дерево стоїть завжди. Поки слова немає, на гілці гойдаються порожні мотузки.
+const artTree = cradle => art("tree", "0 0 110 170", `
+  <path d="M68 170c3-40-1-80 3-112h17c1 34-3 74 3 112z" fill="#7a5230"/>
+  <path d="M74 92Q50 76 16 82" fill="none" stroke="#7a5230" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="84" cy="42" r="34" fill="#5f8f4e"/><circle cx="52" cy="54" r="26" fill="#6fa35a"/><circle cx="100" cy="66" r="10" fill="#6fa35a"/>
+  <g class="sway"><path d="M24 80v${cradle ? 34 : 16}M48 80v${cradle ? 34 : 16}" stroke="#4b3a2c" stroke-width="2"/>
+  ${cradle ? `<path d="M10 114q26 34 52 0z" fill="#a9744a" stroke="#7a5230" stroke-width="2"/><path d="M16 114q20 16 40 0z" fill="#f4e7c8"/><circle cx="30" cy="119" r="6" fill="#f2c9a0"/>` : ""}</g>`);
 
 const ART_SHIP = art("ship", "0 0 60 48", `
-  <path d="M6 32h48l-8 14H14z" fill="#7a4a30"/><rect x="28" y="4" width="3" height="30" fill="#4b3a2c"/>
-  <path class="flame" d="M32 6l18 22H32z" fill="#f4ead2"/>`);
+  <path d="M4 30h52l-9 16H13z" fill="#7a4a30"/><rect x="28" y="2" width="3" height="30" fill="#4b3a2c"/>
+  <path d="M32 4l20 23H32zM27 8L10 27h17z" fill="#f4ead2" stroke="#b9b2a6"/>`);
 
-// Коваль і родина біля хати. Людей видно лише тоді, коли слово «родина» повернулося.
-const person = (x, h, coat, skin = "#f2c9a0") => `<path d="M${x - 8} 70c0-${h} 2-${h} 8-${h}s8 0 8 ${h}z" fill="${coat}"/><circle cx="${x}" cy="${68 - h}" r="6" fill="${skin}"/>`;
-const ART_FAMILY = art("family", "0 0 90 72", `${person(14, 34, "#6b4a2f")}<path d="M21 42l8-10" stroke="#57505c" stroke-width="4"/>${person(36, 30, "#b5533c")}${person(54, 20, "#4b8f5a")}${person(70, 24, "#d09a2e")}`);
+// Родина: людей не малюємо, спільне свято показують накритий стіл і прапорці.
+const ART_TABLE = art("feast", "0 0 150 62", `
+  <rect x="24" y="34" width="6" height="24" fill="#6b4a2f"/><rect x="120" y="34" width="6" height="24" fill="#6b4a2f"/>
+  <path d="M8 24h134v12l-8 8-8-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8-8-8-8 8-8-8z" fill="#f4ead2" stroke="#b5533c" stroke-width="2"/>
+  <path d="M0 58h34M116 58h34" stroke="#7a5230" stroke-width="5" stroke-linecap="round"/>
+  <path d="M28 24c0-16 30-16 30 0z" fill="#c98b3e"/><path d="M34 16l3 6M43 13l3 8M51 16l2 6" stroke="#8a5a26" stroke-width="2"/>
+  <path d="M70 24l-2-14h14l-2 14z" fill="#4f6a8a"/><path d="M82 13q6 2 0 8" fill="none" stroke="#4f6a8a" stroke-width="2"/>
+  <circle cx="98" cy="19" r="5" fill="#c9402e"/><circle cx="109" cy="19" r="5" fill="#d09a2e"/><circle cx="103" cy="12" r="5" fill="#c9402e"/>`);
+const ART_FLAGS = art("flags", "0 0 240 34", `
+  <path d="M0 4Q120 30 240 4" fill="none" stroke="#7a5230" stroke-width="1.5"/>
+  <path d="M26 9l12 3-8 12zM66 15l13 2-8 13zM108 18h13l-6 13zM150 17l13-2-5 14zM192 13l13-3-5 13z" fill="#c9402e"/>
+  <path d="M46 12l12 3-8 12zM87 17l13 1-7 13zM129 18l13-1-6 13zM171 15l13-3-5 14z" fill="#e2a93b"/>`);
 
 // Мовчун читає: плащ, очі без рота й розгорнута книга.
 const ART_READER = art("reader", "0 0 70 90", `
@@ -106,15 +120,15 @@ const ART_READER = art("reader", "0 0 70 90", `
 // Що повернули данжі: порядок збігається з levels/*.md.
 function artVillage(won) {
   return `<svg class="back" viewBox="0 0 400 210" preserveAspectRatio="none" aria-hidden="true">
-    ${won >= 8 ? `<rect y="116" width="400" height="50" fill="#6fb6d8"/>` : ""}
+    ${won >= 8 ? `<rect y="96" width="400" height="70" fill="#6fb6d8"/>` : ""}
     <path d="M0 150Q70 90 150 136T300 124T400 142V210H0z" fill="#9cc27a"/>
     <path d="M0 164v-22q40-22 72-6 26 12 44 28z" fill="${won >= 3 ? "#e8c34a" : "#a58a5e"}"/>
     <rect y="164" width="400" height="46" fill="#7f9a55"/>
     ${won >= 5 ? `<path d="M170 210q40-22 110-34t120-30v18q-60 20-120 34t-80 12z" fill="#d9c79a"/>`
       : `<g fill="#f2f2f0" opacity=".75"><ellipse cx="380" cy="150" rx="46" ry="18"/><ellipse cx="340" cy="170" rx="40" ry="12"/></g>`}</svg>` +
     art("sun", "0 0 50 50", `<circle cx="25" cy="25" r="25" fill="#ffe08a"/>`) +
-    (won >= 8 ? ART_SHIP : "") + artBelfry(won >= 4) + artMill(won >= 3) + artHouse(won >= 10) + artForge(won >= 1, won >= 7) + artWell(won >= 2) +
-    (won >= 6 ? ART_CRADLE : "") + (won >= 9 ? ART_FAMILY : "") + (won >= 10 ? ART_READER : "");
+    (won >= 8 ? ART_SHIP : "") + artTree(won >= 6) + artBelfry(won >= 4) + artMill(won >= 3, won >= 7) + artHouse(won >= 7, won >= 10) +
+    artForge(won >= 1, won >= 7) + artWell(won >= 2) + (won >= 9 ? ART_TABLE + ART_FLAGS : "") + (won >= 10 ? ART_READER : "");
 }
 
 const stones = c => `<rect y="164" width="400" height="46" fill="${c}"/><path d="M0 164l30-5 40 5 60-6 50 6 70-5 60 5 50-4 40 4z" fill="${c}"/>`;

@@ -67,21 +67,23 @@ button.spell:disabled{cursor:wait}
 .bg-house{--sky:linear-gradient(#3a2c44,#2a2030);--floor:#1c1620}
 .bg-sack{--sky:linear-gradient(#94744c,#6b5234);--floor:#4a3826}
 .bg-village{--sky:linear-gradient(#a9d6ee,#e7dfc4);--floor:#7f9a55}
-.scene .sun{position:absolute;top:16px;right:9%;width:44px}
+.scene .sun{position:absolute;top:10px;left:40%;width:40px}
 .scene .mill,.scene .belfry{position:absolute;bottom:44px}
 .scene .mill{left:14%;width:15%;max-width:84px}
 .scene .belfry{left:1%;width:12%;max-width:62px}
-.scene .ship{position:absolute;left:47%;bottom:92px;width:7%;max-width:42px}
-.scene .cradle{position:absolute;z-index:2;left:36%;bottom:12px;width:9%;max-width:52px}
-.scene .family{position:absolute;z-index:2;left:45%;bottom:6px;width:15%;max-width:88px}
-.scene .reader{position:absolute;z-index:2;left:72%;bottom:4px;width:11%;max-width:62px}
+.scene .ship{position:absolute;left:44%;bottom:104px;width:15%;max-width:96px}
+.scene .tree{position:absolute;right:0;bottom:30px;width:18%;max-width:116px}
+.sway{transform-box:view-box;transform-origin:36px 80px}
+.scene .feast{position:absolute;z-index:2;left:33%;bottom:6px;width:32%;max-width:190px}
+.scene .flags{position:absolute;z-index:1;left:30%;top:28px;width:50%;max-width:330px}
+.scene .reader{position:absolute;z-index:2;left:68%;bottom:4px;width:13%;max-width:80px}
 .actor.foe .movchun{width:112px}
 .node.piece{opacity:.95}
 .spin{transform-box:fill-box;transform-origin:center}
 .scene .hut,.scene .forge,.scene .well{position:absolute;z-index:1;bottom:44px}
-.scene .hut{left:30%;width:27%;max-width:120px}
-.scene .forge{left:55%;width:27%;max-width:120px}
-.scene .well{right:3%;width:18%;max-width:76px}
+.scene .hut{left:28%;width:25%;max-width:120px}
+.scene .forge{left:52%;width:25%;max-width:120px}
+.scene .well{right:16%;width:14%;max-width:72px}
 .flame{transform-box:fill-box;transform-origin:bottom}
 .actor.buddy{left:27%;width:34px;bottom:28px}
 .heroart{width:60px}
@@ -171,7 +173,11 @@ button:focus-visible,.tap:focus-visible{outline:3px solid var(--star);outline-of
   .shot.miss{animation:flymiss .9s ease-in forwards}
   .boom{animation:pop .35s ease-out}
   .flame{animation:flicker 1.4s ease-in-out infinite}
-  .spin{animation:spin 9s linear infinite}}
+  .spin{animation:spin 9s linear infinite}
+  .sway{animation:sway 3.6s ease-in-out infinite}
+  .ship{animation:sailby 26s ease-in-out infinite alternate}}
+@keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes sailby{from{transform:translateX(-170%)}to{transform:translateX(170%)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes flicker{50%{transform:scale(1.08,.92)}}
 @keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}

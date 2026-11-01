@@ -17,6 +17,9 @@ const RANKS = [
   { xp: 30, item: "🗡️", name: "Меч: перший удар у бою б'є двічі." },
   { xp: 52, item: "🔔", name: "Дзвіночок: три влучання поспіль б'ють двічі." },
   { xp: 78, item: "🧥", name: "Золотий плащ: тепер герой сяє." },
+  { xp: 105, item: "🧭", name: "Компас: на мапі видно, де лежать шматочки слова." },
+  { xp: 135, item: "⭐", name: "Зірка: на капелюсі героя сяє зірка." },
+  { xp: 170, item: "🪽", name: "Крила: Іскрик дістав маленькі крила." },
 ];
 const $ = id => document.getElementById(id);
 
@@ -48,7 +51,12 @@ const save = () => { try { localStorage.setItem("slovo-mech", JSON.stringify(sto
 const rank = () => RANKS.filter(r => store.xp >= r.xp).length;
 const lives0 = () => BASE_LIVES + (rank() >= 2 ? 1 : 0);
 const sparks0 = () => BASE_SPARKS;
-const heroArt = () => rank() >= 6 ? ART_HERO.replace(/#4b5fc0/g, "#e2a93b").replace(/#39489a/g, "#c28a1e").replace(/#2b3475/g, "#a8741a") : ART_HERO;
+// Нагороди, які видно: вони не допомагають вгадувати.
+const heroArt = () => {
+  const coat = rank() >= 6 ? ART_HERO.replace(/#4b5fc0/g, "#e2a93b").replace(/#39489a/g, "#c28a1e").replace(/#2b3475/g, "#a8741a") : ART_HERO;
+  return rank() >= 8 ? coat.replace("</svg>", `<path d="M33 0l2 5 5 1-4 3 1 5-4-3-4 3 1-5-4-3 5-1z" fill="#ffd95e"/></svg>`) : coat;
+};
+const catArt = () => rank() >= 9 ? ART_CAT.replace("</svg>", `<path d="M6 22L0 10l10 6zM38 22l6-12-10 6z" fill="#fff3c4"/></svg>`) : ART_CAT;
 const cleared = id => store.run.cleared.includes(id);
 const notes = () => ROOMS.filter(r => r.note && store.run.notes.includes(r.note.id)).map(r => r.note);
 
@@ -64,7 +72,7 @@ function textHtml(text, tap) {
 const para = text => `<p class="txt">${textHtml(text, true)}</p>`;
 // Картки й таблички самі натискаються, тому склади на них показує одна спільна кнопка.
 const splitBtn = () => store.opt.syl ? "" : `<button class="alt" id="split">🔍 Показати склади</button>`;
-const catLine = text => `<div class="cat"><span class="catpic">${ART_CAT}</span><div class="bubble">${para(text)}</div></div>`;
+const catLine = text => `<div class="cat"><span class="catpic">${catArt()}</span><div class="bubble">${para(text)}</div></div>`;
 
 function renderHero() {
   const r = rank(), next = RANKS[r];
@@ -89,8 +97,8 @@ function sceneHtml(room, foe) {
     ${room.deco.map((d, i) => `<span class="deco" style="left:${DECO_SPOTS[i % 3]}" aria-hidden="true">${d}</span>`).join("")}
     <span class="gearline" aria-hidden="true">${gearLine()}</span>
     <div class="actor me" id="me">${heroArt()}</div>
-    <div class="actor buddy">${ART_CAT}</div>
-    ${foe ? `<div class="actor foe" id="pic">${room.icon}</div>` : ""}
+    <div class="actor buddy">${catArt()}</div>
+    ${foe ? `<div class="actor foe" id="pic">${room.id === "z_movchun" ? ART_MOVCHUN : room.icon}</div>` : ""}
     ${room.t ? `<div class="foeinfo">${room.t}<span class="pips" id="pips"></span></div>` : ""}
   </div>`;
 }
@@ -100,10 +108,12 @@ const livesText = () => "❤️".repeat(F.lives) + "🖤".repeat(F.maxLives - F.
 
 const MOVCHUN = "Мовчун високий і темний. Він носить довгий плащ і великий мішок. У мішку сидять украдені слова. У Мовчуна немає рота, тому він не вміє говорити. Він заздрить усім, хто читає.";
 
+const MOVCHUN_READS = "Мовчун більше не краде слова. Він сидить біля криниці й читає. Рота він не має, але читати можна й мовчки.";
+
 // Село: тут видно все, що повернули данжі.
 function villageScene() {
   return `<div class="scene bg-village">${artVillage(store.won)}
-    <div class="actor me">${heroArt()}</div><div class="actor buddy">${ART_CAT}</div></div>`;
+    <div class="actor me">${heroArt()}</div><div class="actor buddy">${catArt()}</div></div>`;
 }
 
 function pickDungeon(i) {
@@ -128,7 +138,7 @@ function showVillage() {
     ${done || allDone ? "" : catLine(DUNGEON.cat)}
     ${buttons}<button class="alt" id="who">Хто такий Мовчун?</button></div>`;
   document.querySelectorAll("[data-d]").forEach(b => { b.onclick = () => pickDungeon(+b.dataset.d); });
-  $("who").onclick = () => result(ART_MOVCHUN, para(MOVCHUN), "До села", showVillage);
+  $("who").onclick = () => result(ART_MOVCHUN, para(allDone ? MOVCHUN_READS : MOVCHUN), "До села", showVillage);
   if ($("go")) $("go").onclick = () => {
     if (done) { store.fin = undefined; save(); showVillage(); } else showMap();
   };
@@ -155,8 +165,9 @@ function mapHtml() {
   })).join("");
   const nodes = ROOMS.map(r => {
     const state = cleared(r.id) ? "done" : open.has(r.id) ? "open" : r === BOSS ? "gate" : "fog";
-    const pic = state === "fog" ? "☁️" : state === "open" ? (r === BOSS ? "🚪" : rank() >= 3 ? r.icon : "❓") : state === "gate" ? "🔒" : r.icon;
-    return `<div class="node ${state}" style="left:${mapX(r.at[0])}%;top:${mapY(r.at[1])}%" data-id="${r.id}">${pic}</div>`;
+    const piece = rank() >= 7 && r.rune && !cleared(r.id);
+    const pic = piece ? "✨" : state === "fog" ? "☁️" : state === "open" ? (r === BOSS ? "🚪" : rank() >= 3 ? r.icon : "❓") : state === "gate" ? "🔒" : r.icon;
+    return `<div class="node ${state}${piece ? " piece" : ""}" style="left:${mapX(r.at[0])}%;top:${mapY(r.at[1])}%" data-id="${r.id}">${pic}</div>`;
   }).join("");
   return `<div class="map" role="img" aria-label="Мапа данжу"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div>`;
 }

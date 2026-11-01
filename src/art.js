@@ -19,14 +19,17 @@ const ART_CAT = art("catart", "0 0 44 42", `
   <path d="M20 33h4l-2 2.4z" fill="#2b2140"/>
   <path class="flame" d="M22 0l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#fff3c4"/>`);
 
-const ART_HOUSE = art("hut", "0 0 100 90", `
+const board = (x, y, w, h, text) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#7a5230" stroke="#4b3a2c"/><text x="${x + w / 2}" y="${y + h - 3}" fill="#f4e7c8" font-family="sans-serif" font-weight="700" font-size="${h - 3}" text-anchor="middle">${text}</text>`;
+
+const artHouse = school => art("hut", "0 0 100 90", `
   <rect x="15" y="40" width="70" height="50" fill="#f0e2c4"/>
   <path d="M5 44L50 6l45 38z" fill="#b5533c"/>
   <rect x="42" y="58" width="16" height="32" fill="#6b4a2f"/>
-  <rect x="22" y="52" width="14" height="14" fill="#8fc6e0"/><rect x="64" y="52" width="14" height="14" fill="#8fc6e0"/>`);
+  <rect x="22" y="52" width="14" height="14" fill="#8fc6e0"/><rect x="64" y="52" width="14" height="14" fill="#8fc6e0"/>
+  ${school ? board(26, 42, 48, 13, "ШКОЛА") : ""}`);
 
 // Кузня кам'яна: шви між каменями, дахівка, цегла на димарі й кам'яна арка.
-const artForge = lit => art("forge", "0 0 110 130", `
+const artForge = (lit, sign) => art("forge", "0 0 110 130", `
   ${lit ? `<g class="flame" fill="#c9c6cc"><circle cx="84" cy="26" r="6"/><circle cx="92" cy="14" r="5"/><circle cx="87" cy="4" r="4"/></g>` : ""}
   <rect x="76" y="36" width="16" height="32" fill="#6b6470"/>
   <rect x="73" y="33" width="22" height="5" fill="#57505c"/>
@@ -40,7 +43,8 @@ const artForge = lit => art("forge", "0 0 110 130", `
   <path d="M0 74h110" stroke="#3b3743" stroke-width="2"/>
   <path d="M38 130v-28a17 17 0 0 1 34 0v28z" fill="${lit ? "#ffb347" : "#2b2433"}"/>
   <path d="M38 130v-28a17 17 0 0 1 34 0v28" fill="none" stroke="#6b6470" stroke-width="4"/>
-  ${lit ? `<path class="flame" d="M55 130c-10-6-8-13 0-24 8 11 10 18 0 24z" fill="#f2761e"/>` : ""}`);
+  ${lit ? `<path class="flame" d="M55 130c-10-6-8-13 0-24 8 11 10 18 0 24z" fill="#f2761e"/>` : ""}
+  ${sign ? board(29, 72, 52, 13, "КУЗНЯ") : ""}`);
 
 // Мовчун: темний плащ, очі без рота й мішок украдених слів.
 const ART_MOVCHUN = art("movchun", "0 0 150 170", `
@@ -79,23 +83,52 @@ const artBelfry = rung => art("belfry", "0 0 60 150", `
   ${rung ? `<path class="flame" d="M30 62c-6 0-7 6-8 15-1 2-2 3-2 4h20c0-1-1-2-2-4-1-9-2-15-8-15z" fill="#e2a93b"/>` : ""}
   <path d="M22 150v-18a8 8 0 0 1 16 0v18z" fill="#6b4a2f"/>`);
 
+const ART_CRADLE = art("cradle", "0 0 50 34", `
+  <path d="M6 10q19 26 38 0v-4H6z" fill="#a9744a"/><path d="M6 6h38" stroke="#7a5230" stroke-width="3"/>
+  <path d="M10 8q15 12 30 0z" fill="#f4e7c8"/><path d="M4 30q21 8 42 0" fill="none" stroke="#7a5230" stroke-width="4" stroke-linecap="round"/>`);
+
+const ART_SHIP = art("ship", "0 0 60 48", `
+  <path d="M6 32h48l-8 14H14z" fill="#7a4a30"/><rect x="28" y="4" width="3" height="30" fill="#4b3a2c"/>
+  <path class="flame" d="M32 6l18 22H32z" fill="#f4ead2"/>`);
+
+// Коваль і родина біля хати. Людей видно лише тоді, коли слово «родина» повернулося.
+const person = (x, h, coat, skin = "#f2c9a0") => `<path d="M${x - 8} 70c0-${h} 2-${h} 8-${h}s8 0 8 ${h}z" fill="${coat}"/><circle cx="${x}" cy="${68 - h}" r="6" fill="${skin}"/>`;
+const ART_FAMILY = art("family", "0 0 90 72", `${person(14, 34, "#6b4a2f")}<path d="M21 42l8-10" stroke="#57505c" stroke-width="4"/>${person(36, 30, "#b5533c")}${person(54, 20, "#4b8f5a")}${person(70, 24, "#d09a2e")}`);
+
+// Мовчун читає: плащ, очі без рота й розгорнута книга.
+const ART_READER = art("reader", "0 0 70 90", `
+  <path d="M8 90C10 50 16 16 34 8c18 8 24 42 26 82z" fill="#2b2140"/>
+  <path d="M22 34c0-16 24-16 24 0 0 11-24 11-24 0z" fill="#17112b"/>
+  <ellipse cx="29" cy="32" rx="2.5" ry="3.5" fill="#ffd95e"/><ellipse cx="39" cy="32" rx="2.5" ry="3.5" fill="#ffd95e"/>
+  <path d="M14 58l20 6 20-6v18l-20 6-20-6z" fill="#f4ead2" stroke="#8a6a45"/><path d="M34 64v18" stroke="#8a6a45"/>
+  <path d="M20 66l9 3M20 71l9 3M48 66l-9 3M48 71l-9 3" stroke="#6c6276"/>`);
+
 // Що повернули данжі: порядок збігається з levels/*.md.
 function artVillage(won) {
   return `<svg class="back" viewBox="0 0 400 210" preserveAspectRatio="none" aria-hidden="true">
+    ${won >= 8 ? `<rect y="116" width="400" height="50" fill="#6fb6d8"/>` : ""}
     <path d="M0 150Q70 90 150 136T300 124T400 142V210H0z" fill="#9cc27a"/>
     <path d="M0 164v-22q40-22 72-6 26 12 44 28z" fill="${won >= 3 ? "#e8c34a" : "#a58a5e"}"/>
     <rect y="164" width="400" height="46" fill="#7f9a55"/>
     ${won >= 5 ? `<path d="M170 210q40-22 110-34t120-30v18q-60 20-120 34t-80 12z" fill="#d9c79a"/>`
       : `<g fill="#f2f2f0" opacity=".75"><ellipse cx="380" cy="150" rx="46" ry="18"/><ellipse cx="340" cy="170" rx="40" ry="12"/></g>`}</svg>` +
     art("sun", "0 0 50 50", `<circle cx="25" cy="25" r="25" fill="#ffe08a"/>`) +
-    artBelfry(won >= 4) + artMill(won >= 3) + ART_HOUSE + artForge(won >= 1) + artWell(won >= 2);
+    (won >= 8 ? ART_SHIP : "") + artBelfry(won >= 4) + artMill(won >= 3) + artHouse(won >= 10) + artForge(won >= 1, won >= 7) + artWell(won >= 2) +
+    (won >= 6 ? ART_CRADLE : "") + (won >= 9 ? ART_FAMILY : "") + (won >= 10 ? ART_READER : "");
 }
 
 const stones = c => `<rect y="164" width="400" height="46" fill="${c}"/><path d="M0 164l30-5 40 5 60-6 50 6 70-5 60 5 50-4 40 4z" fill="${c}"/>`;
 const drips = c => `<path d="M0 0h400v14l-20 32-18-30-30 18-16-20-28 44-22-42-30 22-20-24-26 36-20-34-34 18-22-20-24 40-24-38-24 20-22-22-24 30z" fill="${c}"/>`;
 const furrows = `<g fill="none" stroke="#5e4a2a" stroke-width="2"><path d="M0 178h400M0 192h400"/></g>`;
 const trunks = c => `<path d="M40 164V0h26v164zM130 164V0h16v164zM250 164V0h22v164zM350 164V0h30v164z" fill="${c}"/>`;
+const stars = `<g fill="#fff3c4"><circle cx="60" cy="24" r="1.6"/><circle cx="170" cy="46" r="1.2"/><circle cx="210" cy="16" r="1.6"/><circle cx="300" cy="40" r="1.2"/><circle cx="372" cy="20" r="1.6"/></g>`;
+const planks = c => `<g stroke="${c}" stroke-width="2"><path d="M40 0v164M100 0v164M160 0v164M220 0v164M280 0v164M340 0v164"/></g>`;
 const BACKS = {
+  night: stars + `<circle cx="318" cy="46" r="20" fill="#f4e7c8"/>` + trunks("#141f33") + stones("#111a2c"),
+  town: `<path d="M0 164V96l30-24 30 24v68zM70 164V80h60v84zM140 164V100l34-30 34 30v64zM218 164V84h56v84zM284 164V92l32-26 32 26v72zM356 164V82h44v82z" fill="#a39a8a"/><g fill="#efe7d4" stroke="#7a5230" stroke-width="2"><rect x="80" y="96" width="40" height="14"/><rect x="154" y="114" width="40" height="14"/><rect x="228" y="100" width="36" height="14"/><rect x="296" y="108" width="40" height="14"/></g>` + stones("#6f6a66"),
+  sea: `<rect y="104" width="400" height="62" fill="#3b86ad"/><g fill="none" stroke="#bfe6f4" stroke-width="2.5" stroke-linecap="round"><path class="flame" d="M20 124q15-7 30 0t30 0M180 136q15-7 30 0t30 0M300 118q15-7 30 0t30 0"/></g>` + stones("#d9c48f"),
+  house: planks("#00000040") + `<rect x="168" y="38" width="64" height="62" fill="#14101f"/><path d="M200 38v62M168 69h64" stroke="#3a2c44" stroke-width="4"/><circle cx="216" cy="56" r="7" fill="#f4e7c8"/>` + drips("#1c1620") + stones("#1c1620"),
+  sack: `<g stroke="#00000022" stroke-width="2"><path d="M0 20h400M0 44h400M0 68h400M0 92h400M0 116h400M0 140h400M30 0v164M70 0v164M110 0v164M150 0v164M190 0v164M230 0v164M270 0v164M310 0v164M350 0v164"/></g><g fill="#f4e7c866" font-family="serif" font-weight="700" font-size="26"><text x="56" y="62">А</text><text x="150" y="40">Б</text><text x="238" y="74">В</text><text x="320" y="48">Г</text><text x="110" y="118">Д</text><text x="290" y="120">Е</text></g>` + stones("#4a3826"),
   field: `<path d="M0 140Q90 104 200 132T400 122v42H0z" fill="#b09a68"/>` + stones("#7a6238") + furrows,
   tower: `<g fill="none" stroke="#00000030" stroke-width="2"><path d="M0 40h400M0 80h400M0 120h400M50 0v40M170 0v40M290 0v40M110 40v40M230 40v40M350 40v40M50 80v40M170 80v40M290 80v40M110 120v44M230 120v44M350 120v44"/></g><path d="M186 92V44a14 14 0 0 1 28 0v48z" fill="#ffe9a8"/><path d="M0 164h120v-14h-30v-14h-30v-14h-30v-14H0z" fill="#44475a"/>` + stones("#3a3d48"),
   forest: trunks("#26382f") + drips("#1e3d2c") + `<rect y="136" width="400" height="30" fill="#dfe8e0" opacity=".2"/>` + stones("#24372c"),

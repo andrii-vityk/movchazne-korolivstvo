@@ -14,7 +14,7 @@ const FIELDS = {
   "вступ": "intro", "мета": "goal", "кінець": "outro", "кіт": "cat", "шматок": "rune",
 };
 const TOP_FIELDS = { "слово": "word", "місцина": "site", "початок": "start", "кіт": "cat", "фінал": "end", "далі": "next" };
-const BACKGROUNDS = ["cave", "dark", "door", "web", "gate", "lair", "river", "ice", "field", "tower", "forest"];
+const BACKGROUNDS = ["cave", "dark", "door", "web", "gate", "lair", "river", "ice", "field", "tower", "forest", "night", "town", "sea", "house", "sack"];
 const MAX_JUMP = 3; // на скільки слів може вирости середня підказка між кімнатами
 const problems = [];
 

@@ -63,7 +63,7 @@
 значок: 🐀
 місце: 22 72          (x y на мапі, у відсотках)
 сила: 2               (скільки влучань потрібно)
-фон: cave             (cave, dark, door, web, gate, lair, river, ice, field, tower або forest)
+фон: cave             (cave, dark, door, web, gate, lair, river, ice, field, tower, forest, night, town, sea, house або sack)
 декор: 🪨 🍄 🦴
 вступ: Ось щур.
 мета: Що дати щуру?
